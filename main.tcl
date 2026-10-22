@@ -10,20 +10,22 @@ namespace eval tcl_tickle {
     if {![file exists test.tcl]} {
 	    error "Missing test.tcl!"
     }
-    
-    source test.tcl
 
-	if {[string length [info command unit]] <= 0} {
-		error "No declaration for `unit`! (needs to return 'true' or 'false <reason>')"
-	}
+    namespace eval test {
+        source test.tcl
+        
+        if {[string length [info command unit]] <= 0} {
+        	error "No declaration for `unit`! (needs to return 'true' or 'false <reason>')"
+        }
 
-	if {![info exists list_of_tests]} {
-		error "No declaration for `list_of_tests`!"
-	}
+	    if {![info exists list_of_tests]} {
+	    	error "No declaration for `list_of_tests`!"
+	    }
+    }
 
 	variable list_of_distests {}
 	variable list_of_entests {}
-	foreach test $list_of_tests {
+	foreach test $test::list_of_tests {
 		lappend list_of_entests [getTestName $test]
 	}
 
@@ -66,7 +68,7 @@ namespace eval tcl_tickle {
 		    variable logs [open tcl_tickle.log w]
 		    variable all_tests [.entestlist get 0 [.entestlist index end]]
 			foreach test $all_tests {
-			    variable res [::tcl_tickle::unit [getIndex $::tcl_tickle::list_of_tests $test]]
+			    variable res [::tcl_tickle::test::unit [getIndex $::tcl_tickle::test::list_of_tests $test]]
 				if {[lindex $res 0]} {
 				    puts "$test \x1b\[38;2;0;255;0m\[OK\]\x1b\[0m"
 				    puts $logs "\[INFO\] $test \[OK\]"
@@ -83,7 +85,7 @@ namespace eval tcl_tickle {
 		}
 
 		proc reloadTests {} {
-		    namespace eval ::tcl_tickle [list source test.tcl]
+		    namespace eval ::tcl_tickle::test [list source test.tcl]
 		}
 	
 		grid [listbox .entestlist -listvariable ::tcl_tickle::list_of_entests]\
